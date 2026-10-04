@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Karvonen — Garimpo</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --red: #D60000; --red-dark: #BF2726; --black: #0a0a0a;
+    --surface: #141414; --surface2: #1e1e1e; --surface3: #282828;
+    --border: rgba(255,255,255,0.08); --text: #f0f0f0;
+    --text-muted: #888; --text-dim: #555; --font: 'Montserrat', sans-serif;
+  }
+  html { background: var(--black); min-height: 100vh; }
+  body { font-family: var(--font); background: var(--black); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 2rem 1rem 4rem; }
+  .container { width: 100%; max-width: 460px; }
+  .header { display: flex; align-items: center; gap: 14px; margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 0.5px solid var(--border); }
+  .logo-img { width: 48px; height: 48px; object-fit: contain; flex-shrink: 0; }
+  .header-title { font-size: 16px; font-weight: 800; letter-spacing: 2px; color: #fff; }
+  .header-sub { font-size: 11px; font-weight: 500; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+  .section-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--red); margin-bottom: 10px; }
+  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 1.125rem 1.25rem; margin-bottom: 14px; }
+  .toggle-row { display: flex; gap: 8px; margin-bottom: 16px; }
+  .toggle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .toggle-btn { flex: 1; padding: 9px 8px; font-size: 12px; font-weight: 600; font-family: var(--font); letter-spacing: 0.3px; border-radius: 8px; border: 0.5px solid var(--border); background: var(--surface2); color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
+  .toggle-btn.active { background: var(--red); border-color: var(--red); color: #fff; }
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
+  .field input { width: 100%; padding: 10px 12px; font-size: 15px; font-weight: 500; font-family: var(--font); background: var(--surface2); border: 0.5px solid var(--border); border-radius: 8px; color: var(--text); transition: border-color 0.15s; -moz-appearance: textfield; }
+  .field input::-webkit-inner-spin-button, .field input::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .field input:focus { outline: none; border-color: var(--red); }
+  .field input::placeholder { color: var(--text-dim); }
+  .info-pill { font-size: 12px; font-weight: 600; color: var(--text-muted); padding: 7px 12px; background: var(--surface3); border-radius: 8px; margin-top: 8px; display: none; line-height: 1.6; }
+  .info-pill.show { display: block; }
+  .info-pill .highlight { color: #fff; }
+  .info-pill .class-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-left: 6px; background: var(--red); color: #fff; }
+  .pct-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pct-section-label { grid-column: 1 / -1; font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; padding-top: 10px; border-top: 0.5px solid var(--border); margin-top: 2px; }
+  .pct-section-label:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+  .calc-btn { width: 100%; padding: 14px; font-size: 14px; font-weight: 800; font-family: var(--font); letter-spacing: 1.5px; text-transform: uppercase; background: var(--red); color: #fff; border: none; border-radius: 10px; cursor: pointer; transition: all 0.15s; margin-top: 4px; }
+  .calc-btn:hover { background: var(--red-dark); }
+  .calc-btn:active { transform: scale(0.98); opacity: 0.9; }
+  .error { font-size: 12px; font-weight: 500; color: var(--red); margin-top: 8px; display: none; padding: 0 2px; }
+  .error.show { display: block; }
+  .result-wrap { margin-top: 16px; display: none; }
+  .result-wrap.show { display: block; }
+  .result-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 10px; }
+  .result-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px 12px; border-bottom: 0.5px solid var(--border); }
+  .result-title { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--red); }
+  .fc-badge { font-size: 11px; font-weight: 600; color: var(--text-muted); background: var(--surface3); padding: 3px 9px; border-radius: 6px; }
+  .zone-row { display: flex; justify-content: space-between; align-items: center; padding: 13px 16px; border-bottom: 0.5px solid var(--border); transition: background 0.1s; }
+  .zone-row:last-child { border-bottom: none; }
+  .zone-row:hover { background: var(--surface2); }
+  .zone-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .zone-pct { font-size: 11px; font-weight: 500; color: var(--text-muted); margin-top: 2px; }
+  .zone-bpm { font-size: 17px; font-weight: 800; color: #fff; text-align: right; white-space: nowrap; }
+  .zone-bpm .unit { font-size: 11px; font-weight: 500; color: var(--red); margin-left: 3px; }
+  .instrucoes { background: var(--surface2); border: 0.5px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; font-size: 12px; font-weight: 500; color: var(--text-muted); line-height: 1.7; }
+  .instrucoes strong { color: var(--text); font-weight: 700; }
+  .note { font-size: 11px; font-weight: 500; color: var(--text-muted); padding: 10px 14px; background: var(--surface2); border: 0.5px solid var(--border); border-radius: 8px; margin-bottom: 10px; display: none; }
+  .note.show { display: block; }
+  .note strong { color: var(--red); }
+  .copy-btn { width: 100%; padding: 12px; font-size: 13px; font-weight: 700; font-family: var(--font); letter-spacing: 1px; text-transform: uppercase; background: transparent; color: var(--red); border: 0.5px solid var(--red); border-radius: 10px; cursor: pointer; transition: all 0.15s; }
+  .copy-btn:hover { background: rgba(214,0,0,0.08); }
+  .copy-btn:active { background: var(--red); color: #fff; transform: scale(0.98); }
+  .footer { margin-top: 3rem; text-align: center; font-size: 10px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <img class="logo-img" src="data:image/png;base64,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" alt="Garimpo">
+    <div>
+      <div class="header-title">GARIMPO</div>
+      <div class="header-sub">Calculadora Karvonen</div>
+    </div>
+  </div>
+
+  <div class="section-label">Método de teste</div>
+  <div class="card">
+    <div class="toggle-grid">
+      <button class="toggle-btn active" id="btn-test-cooper" onclick="setTestMethod('cooper')">Cooper</button>
+      <button class="toggle-btn" id="btn-test-bike" onclick="setTestMethod('bike')">Bike</button>
+      <button class="toggle-btn" id="btn-test-walk" onclick="setTestMethod('walk')">Caminhada</button>
+      <button class="toggle-btn" id="btn-test-step" onclick="setTestMethod('step')">Step (obesidade)</button>
+    </div>
+  </div>
+
+  <div id="field-test-cooper">
+    <div class="section-label">Teste de Cooper</div>
+    <div class="card">
+      <div class="field">
+        <label>Distância percorrida em 12 min (metros)</label>
+        <input type="number" id="cooper-dist" placeholder="ex: 1850" min="500" max="3500" oninput="onCooperInput()">
+      </div>
+      <div class="info-pill" id="cooper-info"></div>
+    </div>
+  </div>
+
+  <div id="field-test-bike" style="display:none;">
+    <div class="section-label">Teste na bike (Åstrand-Ryhming)</div>
+    <div class="card">
+      <div class="toggle-row">
+        <button class="toggle-btn active" id="btn-sexo-f" onclick="setSexoBike('F')">Feminino</button>
+        <button class="toggle-btn" id="btn-sexo-m" onclick="setSexoBike('M')">Masculino</button>
+      </div>
+      <div class="instrucoes">
+        <strong>Carga inicial sugerida (mulheres):</strong> destreinadas 50–75W, treinadas 75–100W.<br><br>
+        Ajuste a carga para manter a FC entre 125–170 bpm ao longo dos 6 min de teste. Registre a FC no 5º e no 6º minuto: se a diferença entre eles passar de 5 bpm, o estado estável ainda não foi atingido, siga por mais 1 minuto antes de lançar o valor aqui.
+      </div>
+
+      <div class="toggle-row">
+        <button class="toggle-btn active" id="btn-carga-watts" onclick="setCargaMode('watts')">Carga em watts</button>
+        <button class="toggle-btn" id="btn-carga-kprpm" onclick="setCargaMode('kprpm')">kp + RPM</button>
+      </div>
+
+      <div id="field-carga-watts">
+        <div class="field">
+          <label>Carga aplicada (watts)</label>
+          <input type="number" id="bike-watts" placeholder="ex: 75" min="20" max="300" oninput="onBikeInput()">
+        </div>
+      </div>
+
+      <div id="field-carga-kprpm" style="display:none;">
+        <div class="note show" style="margin-bottom:14px;">
+          <strong>Só use esta opção se a bike mostrar resistência calibrada em kp/kgf</strong> (tipo Monark). Se for nível genérico sem unidade de peso, esse cálculo não é válido; troque para o método de caminhada com essa aluna.
+        </div>
+        <div class="field">
+          <label>Resistência (kp / kgf)</label>
+          <input type="number" id="bike-kp" placeholder="ex: 1.5" step="0.25" min="0.5" max="6" oninput="onBikeInput()">
+        </div>
+        <div class="field">
+          <label>Cadência (RPM)</label>
+          <input type="number" id="bike-rpm" placeholder="ex: 50" min="40" max="90" oninput="onBikeInput()">
+        </div>
+        <div class="info-pill" id="bike-watts-calc"></div>
+      </div>
+
+      <div class="field">
+        <label>FC em estado estável, min 5–6 (bpm)</label>
+        <input type="number" id="bike-fc" placeholder="ex: 152" min="90" max="200" oninput="onBikeInput()">
+      </div>
+      <div class="field">
+        <label>Idade da aluna (anos)</label>
+        <input type="number" id="bike-idade" placeholder="ex: 28" min="15" max="70" oninput="onBikeInput()">
+      </div>
+      <div class="field">
+        <label>Peso corporal (kg)</label>
+        <input type="number" id="bike-peso" placeholder="ex: 65" min="35" max="150" oninput="onBikeInput()">
+      </div>
+      <div class="info-pill" id="bike-info"></div>
+      <div class="note" id="note-bike-validity">
+        <strong>Atenção:</strong> FC de estado estável fora da faixa ideal (125–170 bpm). O resultado fica menos confiável; ajuste a carga e repita o teste se possível.
+      </div>
+    </div>
+  </div>
+
+  <div id="field-test-walk" style="display:none;">
+    <div class="section-label">Teste de caminhada (Rockport)</div>
+    <div class="card">
+      <div class="toggle-row">
+        <button class="toggle-btn active" id="btn-sexo-walk-f" onclick="setSexoWalk('F')">Feminino</button>
+        <button class="toggle-btn" id="btn-sexo-walk-m" onclick="setSexoWalk('M')">Masculino</button>
+      </div>
+      <div class="instrucoes">
+        Indicado para alunas com condropatia ou restrição de impacto que não podem correr nem têm bike calibrada disponível. Percorra <strong>1 milha (1.609 m)</strong> em pista plana e medida, no ritmo de caminhada mais rápido possível, sem correr. Cronometre o tempo total e meça a FC nos primeiros 10 segundos após cruzar a linha de chegada.
+      </div>
+      <div class="note show">
+        <strong>Limite do método:</strong> subestima VO2 máx em alunas muito condicionadas, porque a caminhada tem um teto de velocidade que não eleva a FC o suficiente pra diferenciar fitness alto. Para aluna treinada que não pode correr, prefira a bike com kp calibrado.
+      </div>
+      <div class="field">
+        <label>Tempo total (minutos)</label>
+        <input type="number" id="walk-min" placeholder="ex: 14" min="6" max="30" oninput="onWalkInput()">
+      </div>
+      <div class="field">
+        <label>Tempo total (segundos restantes)</label>
+        <input type="number" id="walk-seg" placeholder="ex: 30" min="0" max="59" oninput="onWalkInput()">
+      </div>
+      <div class="field">
+        <label>FC ao final, primeiros 10s (bpm)</label>
+        <input type="number" id="walk-fc" placeholder="ex: 140" min="80" max="200" oninput="onWalkInput()">
+      </div>
+      <div class="field">
+        <label>Idade da aluna (anos)</label>
+        <input type="number" id="walk-idade" placeholder="ex: 28" min="15" max="80" oninput="onWalkInput()">
+      </div>
+      <div class="field">
+        <label>Peso corporal (kg)</label>
+        <input type="number" id="walk-peso" placeholder="ex: 65" min="35" max="150" oninput="onWalkInput()">
+      </div>
+      <div class="info-pill" id="walk-info"></div>
+    </div>
+  </div>
+
+  <div id="field-test-step" style="display:none;">
+    <div class="section-label">Step 2 min (obesidade)</div>
+    <div class="card">
+      <div class="instrucoes">
+        Degrau de <strong>15 cm</strong>, sem apoio das mãos. A aluna sobe e desce o degrau o máximo de vezes possível em <strong>2 minutos</strong>, em cadência livre, podendo reduzir o ritmo ou pausar se precisar. Conte <strong>ciclos completos</strong>: subida com a perna dominante, depois a contralateral, descida na mesma ordem. Cada subida + descida completa das duas pernas = 1 ciclo.
+      </div>
+      <div class="note show">
+        <strong>Validado para obesidade com comorbidade (IMC ≥ 35) ou obesidade grave (IMC ≥ 40)</strong>, sedentárias, 18–60 anos, sem comprometimento ortopédico ou neurológico, sem hipertensão ou diabetes descompensada (Ricci et al., 2019). Para esse perfil, confirme liberação médica antes de aplicar. Fora dessa faixa de IMC ou com problema articular, use Cooper, bike ou caminhada.
+      </div>
+      <div class="field">
+        <label>Peso corporal (kg)</label>
+        <input type="number" id="step-peso" placeholder="ex: 98" min="50" max="250" oninput="onStepInput()">
+      </div>
+      <div class="field">
+        <label>Altura (cm)</label>
+        <input type="number" id="step-altura" placeholder="ex: 165" min="130" max="210" oninput="onStepInput()">
+      </div>
+      <div class="field">
+        <label>Ciclos completos em 2 min</label>
+        <input type="number" id="step-uds" placeholder="ex: 45" min="10" max="120" oninput="onStepInput()">
+      </div>
+      <div class="info-pill" id="step-info"></div>
+      <div class="note" id="note-step-imc">
+        <strong>Atenção:</strong> IMC fora da faixa validada pelo estudo (≥ 35). O resultado abaixo desse IMC é extrapolação, não validação direta; considere Cooper, bike ou caminhada para essa aluna.
+      </div>
+    </div>
+  </div>
+
+
+  <div class="section-label">FC máxima</div>
+  <div class="card">
+    <div class="toggle-row">
+      <button class="toggle-btn active" id="btn-cooper" onclick="setMode('cooper')">Cooper (medida)</button>
+      <button class="toggle-btn" id="btn-gulati" onclick="setMode('gulati')">Gulati (estimada)</button>
+    </div>
+    <div class="field" id="field-cooper">
+      <label>FC nos últimos 30s do Cooper (bpm)</label>
+      <input type="number" id="fc-max-cooper" placeholder="ex: 185" min="100" max="220">
+    </div>
+    <div id="field-gulati" style="display:none;">
+      <div class="field">
+        <label>Idade da aluna (anos)</label>
+        <input type="number" id="idade" placeholder="ex: 28" min="15" max="70" oninput="onIdadeInput()">
+      </div>
+      <div class="info-pill" id="gulati-info"></div>
+    </div>
+  </div>
+
+  <div class="section-label">FC de repouso</div>
+  <div class="card">
+    <div class="field">
+      <label>FC de repouso (bpm)</label>
+      <input type="number" id="fc-rep" placeholder="ex: 62" min="40" max="100">
+    </div>
+  </div>
+
+  <div class="section-label">Intensidades por modalidade (%)</div>
+  <div class="card">
+    <div class="pct-grid">
+      <div class="pct-section-label">Aeróbico em jejum</div>
+      <div class="field">
+        <label>Mínimo (%)</label>
+        <input type="number" id="jejum-min" placeholder="—" min="40" max="95">
+      </div>
+      <div class="field">
+        <label>Máximo (%)</label>
+        <input type="number" id="jejum-max" placeholder="—" min="40" max="95">
+      </div>
+      <div class="pct-section-label">Aeróbico alimentada</div>
+      <div class="field">
+        <label>Mínimo (%)</label>
+        <input type="number" id="alim-min" placeholder="—" min="40" max="95">
+      </div>
+      <div class="field">
+        <label>Máximo (%)</label>
+        <input type="number" id="alim-max" placeholder="—" min="40" max="95">
+      </div>
+      <div class="pct-section-label">HIIT (pico)</div>
+      <div class="field">
+        <label>Mínimo (%)</label>
+        <input type="number" id="hiit-min" placeholder="—" min="40" max="95">
+      </div>
+      <div class="field">
+        <label>Máximo (%)</label>
+        <input type="number" id="hiit-max" placeholder="—" min="40" max="95">
+      </div>
+    </div>
+  </div>
+
+  <div class="error" id="error-msg">Preencha todos os campos antes de calcular.</div>
+  <button class="calc-btn" onclick="calcular()">Calcular</button>
+
+  <div class="result-wrap" id="result-wrap">
+    <div class="result-card">
+      <div class="result-header">
+        <span class="result-title">Zonas de intensidade</span>
+        <span class="fc-badge" id="fc-badge-text"></span>
+      </div>
+      <div class="zone-row">
+        <div>
+          <div class="zone-name">Aeróbico em jejum</div>
+          <div class="zone-pct" id="lbl-jejum"></div>
+        </div>
+        <div class="zone-bpm" id="res-jejum"></div>
+      </div>
+      <div class="zone-row">
+        <div>
+          <div class="zone-name">Aeróbico alimentada</div>
+          <div class="zone-pct" id="lbl-alim"></div>
+        </div>
+        <div class="zone-bpm" id="res-alim"></div>
+      </div>
+      <div class="zone-row">
+        <div>
+          <div class="zone-name">HIIT (pico)</div>
+          <div class="zone-pct" id="lbl-hiit"></div>
+        </div>
+        <div class="zone-bpm" id="res-hiit"></div>
+      </div>
+    </div>
+
+    <div class="instrucoes">
+      <strong>Se treinar 2x no dia:</strong> cardio na 1ª sessão, musculação na 2ª, com no mínimo 6h de intervalo.<br><br>
+      <strong>Se treinar 1x no dia:</strong> cardio sempre após a musculação. Exceção: aeróbico leve pode ser feito antes sem prejuízo (zona de bpm do AEJ). Prefira a bike após treinos de pernas.
+    </div>
+
+    <div class="note" id="note-gulati">
+      <strong>Atenção:</strong> FC máxima estimada pela fórmula Gulati. Substituir pelo valor medido no Cooper no próximo ciclo.
+    </div>
+    <button class="copy-btn" id="copy-btn" onclick="copiar()">Copiar resultado</button>
+  </div>
+
+  <div class="footer">Garimpo · Yuri Wandorth · Recife-PE</div>
+</div>
+
+<script>
+var mode = 'cooper';
+var testMethod = 'cooper';
+var sexoBike = 'F';
+var sexoWalk = 'F';
+var cargaInputMode = 'watts';
+var lastResult = '';
+var lastBikeVO2Rel = null;
+var lastBikeVO2Abs = null;
+var lastBikeAgeFactor = null;
+var lastBikeWatts = null;
+var lastWalkVO2 = null;
+var lastWalkCorrigido = false;
+var lastStepVO2 = null;
+var lastStepBmi = null;
+
+var CLASSES = [
+  { label: 'Muito baixo', vo2Max: 28,  jejumMin: 55, jejumMax: 65, alimMin: 60, alimMax: 68, hiitMin: 75, hiitMax: 82 },
+  { label: 'Baixo',       vo2Max: 34,  jejumMin: 58, jejumMax: 67, alimMin: 62, alimMax: 70, hiitMin: 78, hiitMax: 85 },
+  { label: 'Moderado',    vo2Max: 41,  jejumMin: 60, jejumMax: 70, alimMin: 65, alimMax: 73, hiitMin: 80, hiitMax: 87 },
+  { label: 'Bom',         vo2Max: 48,  jejumMin: 63, jejumMax: 72, alimMin: 67, alimMax: 75, hiitMin: 83, hiitMax: 90 },
+  { label: 'Excelente',   vo2Max: 999, jejumMin: 65, jejumMax: 75, alimMin: 70, alimMax: 78, hiitMin: 85, hiitMax: 92 }
+];
+
+function calcVO2(dist) {
+  return ((dist - 504.9) / 44.73).toFixed(1);
+}
+
+function getClasse(vo2) {
+  for (var i = 0; i < CLASSES.length; i++) {
+    if (vo2 <= CLASSES[i].vo2Max) return CLASSES[i];
+  }
+  return CLASSES[CLASSES.length - 1];
+}
+
+// Fatores de correção etária do nomograma de Åstrand (Åstrand, I., 1960)
+var AGE_FACTOR_TABLE = [
+  [15, 1.10], [25, 1.00], [35, 0.87], [40, 0.83],
+  [45, 0.78], [50, 0.75], [55, 0.71], [60, 0.68], [65, 0.65]
+];
+
+function ageFactor(age) {
+  var t = AGE_FACTOR_TABLE;
+  if (age <= t[0][0]) return t[0][1];
+  if (age >= t[t.length - 1][0]) return t[t.length - 1][1];
+  for (var i = 0; i < t.length - 1; i++) {
+    var a0 = t[i][0], a1 = t[i + 1][0];
+    if (age >= a0 && age <= a1) {
+      var f0 = t[i][1], f1 = t[i + 1][1];
+      return f0 + (f1 - f0) * ((age - a0) / (a1 - a0));
+    }
+  }
+  return 1.0;
+}
+
+// Fórmula de Buono et al. (1989), modificação do nomograma de Åstrand-Ryhming.
+// Carga em kg.m/min (watts x 6.12). VO2max bruto em L/min, antes da correção etária.
+function calcAstrandVO2Abs(watts, hrss, sexo) {
+  var kgm = watts * 6.12;
+  var num, den;
+  if (sexo === 'F') {
+    num = 0.00193 * kgm + 0.326;
+    den = 0.769 * hrss - 56.1;
+  } else {
+    num = 0.00212 * kgm + 0.299;
+    den = 0.769 * hrss - 48.5;
+  }
+  return (num / den) * 100;
+}
+
+function onCooperInput() {
+  var dist = parseFloat(document.getElementById('cooper-dist').value);
+  var pill = document.getElementById('cooper-info');
+  if (isNaN(dist) || dist < 500) { pill.classList.remove('show'); return; }
+  var vo2 = parseFloat(calcVO2(dist));
+  var cl = getClasse(vo2);
+  pill.innerHTML = 'VO2 máx estimado: <span class="highlight">' + vo2 + ' ml/kg/min</span>'
+    + ' &nbsp;·&nbsp; Condicionamento: <span class="class-badge">' + cl.label + '</span>'
+    + '<br>Faixas sugeridas preenchidas automaticamente.';
+  pill.classList.add('show');
+  document.getElementById('jejum-min').value = cl.jejumMin;
+  document.getElementById('jejum-max').value = cl.jejumMax;
+  document.getElementById('alim-min').value  = cl.alimMin;
+  document.getElementById('alim-max').value  = cl.alimMax;
+  document.getElementById('hiit-min').value  = cl.hiitMin;
+  document.getElementById('hiit-max').value  = cl.hiitMax;
+}
+
+function onIdadeInput() {
+  var idade = parseFloat(document.getElementById('idade').value);
+  var el = document.getElementById('gulati-info');
+  if (isNaN(idade) || idade < 15) { el.classList.remove('show'); return; }
+  var fcEst = Math.round(206 - (0.88 * idade));
+  el.innerHTML = 'FC máx estimada (Gulati): <span class="highlight">' + fcEst + ' bpm</span>';
+  el.classList.add('show');
+}
+
+function setCargaMode(m) {
+  cargaInputMode = m;
+  document.getElementById('btn-carga-watts').classList.toggle('active', m === 'watts');
+  document.getElementById('btn-carga-kprpm').classList.toggle('active', m === 'kprpm');
+  document.getElementById('field-carga-watts').style.display = m === 'watts' ? 'block' : 'none';
+  document.getElementById('field-carga-kprpm').style.display = m === 'kprpm' ? 'block' : 'none';
+  onBikeInput();
+}
+
+function getWattsFromCarga() {
+  if (cargaInputMode === 'watts') {
+    return parseFloat(document.getElementById('bike-watts').value);
+  }
+  var kp  = parseFloat(document.getElementById('bike-kp').value);
+  var rpm = parseFloat(document.getElementById('bike-rpm').value);
+  var calcPill = document.getElementById('bike-watts-calc');
+  if (isNaN(kp) || isNaN(rpm)) {
+    calcPill.classList.remove('show');
+    return NaN;
+  }
+  // Distância padrão do volante por pedalada em ergômetros tipo Monark: 6 m/volta.
+  var kgmMin = kp * 6 * rpm;
+  var watts = kgmMin / 6.12;
+  calcPill.innerHTML = 'Carga calculada: <span class="highlight">' + watts.toFixed(0) + ' W</span> (' + kgmMin.toFixed(0) + ' kg·m/min)';
+  calcPill.classList.add('show');
+  return watts;
+}
+
+function onBikeInput() {
+  var watts = getWattsFromCarga();
+  var hrss  = parseFloat(document.getElementById('bike-fc').value);
+  var idade = parseFloat(document.getElementById('bike-idade').value);
+  var peso  = parseFloat(document.getElementById('bike-peso').value);
+  var pill  = document.getElementById('bike-info');
+  var noteValidity = document.getElementById('note-bike-validity');
+
+  if (isNaN(watts) || isNaN(hrss) || isNaN(idade) || isNaN(peso) || hrss <= 56.1 / 0.769) {
+    pill.classList.remove('show');
+    noteValidity.classList.remove('show');
+    lastBikeVO2Rel = null; lastBikeVO2Abs = null; lastBikeAgeFactor = null;
+    return;
+  }
+
+  noteValidity.classList.toggle('show', hrss < 125 || hrss > 170);
+
+  var vo2AbsBruto = calcAstrandVO2Abs(watts, hrss, sexoBike);
+  if (vo2AbsBruto <= 0) {
+    pill.classList.remove('show');
+    lastBikeVO2Rel = null; lastBikeVO2Abs = null; lastBikeAgeFactor = null;
+    return;
+  }
+
+  var fator = ageFactor(idade);
+  var vo2AbsCorrigido = vo2AbsBruto * fator;
+  var vo2Rel = (vo2AbsCorrigido * 1000) / peso;
+
+  lastBikeVO2Abs = vo2AbsCorrigido;
+  lastBikeVO2Rel = vo2Rel;
+  lastBikeAgeFactor = fator;
+  lastBikeWatts = watts;
+
+  var cl = getClasse(vo2Rel);
+  pill.innerHTML = 'VO2 máx estimado: <span class="highlight">' + vo2Rel.toFixed(1) + ' ml/kg/min</span>'
+    + ' (' + vo2AbsCorrigido.toFixed(2) + ' L/min) &nbsp;·&nbsp; Condicionamento: <span class="class-badge">' + cl.label + '</span>'
+    + '<br>Fator de correção etária: ' + fator.toFixed(2) + '. Faixas sugeridas preenchidas automaticamente.';
+  pill.classList.add('show');
+
+  document.getElementById('jejum-min').value = cl.jejumMin;
+  document.getElementById('jejum-max').value = cl.jejumMax;
+  document.getElementById('alim-min').value  = cl.alimMin;
+  document.getElementById('alim-max').value  = cl.alimMax;
+  document.getElementById('hiit-min').value  = cl.hiitMin;
+  document.getElementById('hiit-max').value  = cl.hiitMax;
+}
+
+function setSexoBike(s) {
+  sexoBike = s;
+  document.getElementById('btn-sexo-f').classList.toggle('active', s === 'F');
+  document.getElementById('btn-sexo-m').classList.toggle('active', s === 'M');
+  onBikeInput();
+}
+
+// Fórmula de Kline et al. (1987), teste de caminhada de 1 milha (Rockport).
+// Correção para 18–24 anos conforme Dolgener et al. (1994).
+function onWalkInput() {
+  var min   = parseFloat(document.getElementById('walk-min').value);
+  var seg   = parseFloat(document.getElementById('walk-seg').value);
+  var hr    = parseFloat(document.getElementById('walk-fc').value);
+  var idade = parseFloat(document.getElementById('walk-idade').value);
+  var peso  = parseFloat(document.getElementById('walk-peso').value);
+  var pill  = document.getElementById('walk-info');
+
+  if (isNaN(min) || isNaN(seg) || isNaN(hr) || isNaN(idade) || isNaN(peso)) {
+    pill.classList.remove('show');
+    lastWalkVO2 = null;
+    return;
+  }
+
+  var tempoMin = min + (seg / 60);
+  var pesoLb = peso * 2.20462;
+  var sexoNum = sexoWalk === 'M' ? 1 : 0;
+
+  var vo2 = 132.853 - (0.0769 * pesoLb) - (0.3877 * idade) + (6.315 * sexoNum)
+    - (3.2649 * tempoMin) - (0.1565 * hr);
+
+  lastWalkCorrigido = idade < 25;
+  if (lastWalkCorrigido) vo2 -= 6;
+
+  if (vo2 <= 0) {
+    pill.classList.remove('show');
+    lastWalkVO2 = null;
+    return;
+  }
+
+  lastWalkVO2 = vo2;
+  var cl = getClasse(vo2);
+  pill.innerHTML = 'VO2 máx estimado: <span class="highlight">' + vo2.toFixed(1) + ' ml/kg/min</span>'
+    + ' &nbsp;·&nbsp; Condicionamento: <span class="class-badge">' + cl.label + '</span>'
+    + (lastWalkCorrigido ? '<br>Correção para 18–24 anos aplicada (–6 ml/kg/min).' : '')
+    + '<br>Faixas sugeridas preenchidas automaticamente.';
+  pill.classList.add('show');
+
+  document.getElementById('jejum-min').value = cl.jejumMin;
+  document.getElementById('jejum-max').value = cl.jejumMax;
+  document.getElementById('alim-min').value  = cl.alimMin;
+  document.getElementById('alim-max').value  = cl.alimMax;
+  document.getElementById('hiit-min').value  = cl.hiitMin;
+  document.getElementById('hiit-max').value  = cl.hiitMax;
+}
+
+function setSexoWalk(s) {
+  sexoWalk = s;
+  document.getElementById('btn-sexo-walk-f').classList.toggle('active', s === 'F');
+  document.getElementById('btn-sexo-walk-m').classList.toggle('active', s === 'M');
+  onWalkInput();
+}
+
+// Fórmula de Ricci et al. (2019), Braz J Med Biol Res, step test de 2 min para
+// obesidade com comorbidade (IMC ≥ 35) e obesidade grave (IMC ≥ 40).
+function onStepInput() {
+  var peso   = parseFloat(document.getElementById('step-peso').value);
+  var altura = parseFloat(document.getElementById('step-altura').value);
+  var uds    = parseFloat(document.getElementById('step-uds').value);
+  var pill   = document.getElementById('step-info');
+  var noteImc = document.getElementById('note-step-imc');
+
+  if (isNaN(peso) || isNaN(altura) || isNaN(uds)) {
+    pill.classList.remove('show');
+    noteImc.classList.remove('show');
+    lastStepVO2 = null; lastStepBmi = null;
+    return;
+  }
+
+  var alturaM = altura / 100;
+  var bmi = peso / (alturaM * alturaM);
+  var vo2 = 13.341 + (0.138 * uds) - (0.183 * bmi);
+
+  noteImc.classList.toggle('show', bmi < 35);
+
+  if (vo2 <= 0) {
+    pill.classList.remove('show');
+    lastStepVO2 = null; lastStepBmi = bmi;
+    return;
+  }
+
+  lastStepVO2 = vo2;
+  lastStepBmi = bmi;
+  var cl = getClasse(vo2);
+  pill.innerHTML = 'VO2 máx estimado: <span class="highlight">' + vo2.toFixed(1) + ' ml/kg/min</span>'
+    + ' &nbsp;·&nbsp; IMC: <span class="highlight">' + bmi.toFixed(1) + '</span>'
+    + ' &nbsp;·&nbsp; Condicionamento: <span class="class-badge">' + cl.label + '</span>'
+    + '<br>Faixas sugeridas preenchidas automaticamente.';
+  pill.classList.add('show');
+
+  document.getElementById('jejum-min').value = cl.jejumMin;
+  document.getElementById('jejum-max').value = cl.jejumMax;
+  document.getElementById('alim-min').value  = cl.alimMin;
+  document.getElementById('alim-max').value  = cl.alimMax;
+  document.getElementById('hiit-min').value  = cl.hiitMin;
+  document.getElementById('hiit-max').value  = cl.hiitMax;
+}
+
+function setTestMethod(m) {
+  testMethod = m;
+  document.getElementById('btn-test-cooper').classList.toggle('active', m === 'cooper');
+  document.getElementById('btn-test-bike').classList.toggle('active', m === 'bike');
+  document.getElementById('btn-test-walk').classList.toggle('active', m === 'walk');
+  document.getElementById('btn-test-step').classList.toggle('active', m === 'step');
+  document.getElementById('field-test-cooper').style.display = m === 'cooper' ? 'block' : 'none';
+  document.getElementById('field-test-bike').style.display   = m === 'bike'   ? 'block' : 'none';
+  document.getElementById('field-test-walk').style.display   = m === 'walk'   ? 'block' : 'none';
+  document.getElementById('field-test-step').style.display   = m === 'step'   ? 'block' : 'none';
+}
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('btn-cooper').classList.toggle('active', m === 'cooper');
+  document.getElementById('btn-gulati').classList.toggle('active', m === 'gulati');
+  document.getElementById('field-cooper').style.display = m === 'cooper' ? 'block' : 'none';
+  document.getElementById('field-gulati').style.display = m === 'gulati' ? 'block' : 'none';
+  document.getElementById('gulati-info').classList.remove('show');
+}
+
+function karvonen(fcMax, fcRep, pct) {
+  return Math.round((fcMax - fcRep) * (pct / 100) + fcRep);
+}
+
+function calcular() {
+  var err = document.getElementById('error-msg');
+  err.classList.remove('show');
+
+  var fcRep    = parseFloat(document.getElementById('fc-rep').value);
+  var jejumMin = parseFloat(document.getElementById('jejum-min').value);
+  var jejumMax = parseFloat(document.getElementById('jejum-max').value);
+  var alimMin  = parseFloat(document.getElementById('alim-min').value);
+  var alimMax  = parseFloat(document.getElementById('alim-max').value);
+  var hiitMin  = parseFloat(document.getElementById('hiit-min').value);
+  var hiitMax  = parseFloat(document.getElementById('hiit-max').value);
+
+  var fcMax, isGulati = false;
+  if (mode === 'cooper') {
+    fcMax = parseFloat(document.getElementById('fc-max-cooper').value);
+  } else {
+    var idade = parseFloat(document.getElementById('idade').value);
+    if (isNaN(idade)) { err.classList.add('show'); return; }
+    fcMax = Math.round(206 - (0.88 * idade));
+    isGulati = true;
+  }
+
+  if (isNaN(fcMax) || isNaN(fcRep) || isNaN(jejumMin) || isNaN(jejumMax) ||
+      isNaN(alimMin) || isNaN(alimMax) || isNaN(hiitMin) || isNaN(hiitMax)) {
+    err.classList.add('show'); return;
+  }
+
+  var rJejumMin = karvonen(fcMax, fcRep, jejumMin);
+  var rJejumMax = karvonen(fcMax, fcRep, jejumMax);
+  var rAlimMin  = karvonen(fcMax, fcRep, alimMin);
+  var rAlimMax  = karvonen(fcMax, fcRep, alimMax);
+  var rHiitMin  = karvonen(fcMax, fcRep, hiitMin);
+  var rHiitMax  = karvonen(fcMax, fcRep, hiitMax);
+
+  document.getElementById('lbl-jejum').textContent = jejumMin + '% a ' + jejumMax + '%';
+  document.getElementById('lbl-alim').textContent  = alimMin  + '% a ' + alimMax  + '%';
+  document.getElementById('lbl-hiit').textContent  = hiitMin  + '% a ' + hiitMax  + '%';
+
+  document.getElementById('res-jejum').innerHTML = rJejumMin + ' a ' + rJejumMax + '<span class="unit">bpm</span>';
+  document.getElementById('res-alim').innerHTML  = rAlimMin  + ' a ' + rAlimMax  + '<span class="unit">bpm</span>';
+  document.getElementById('res-hiit').innerHTML  = rHiitMin  + ' a ' + rHiitMax  + '<span class="unit">bpm</span>';
+
+  document.getElementById('fc-badge-text').textContent = (isGulati ? 'FC máx est.: ' : 'FC máx medida: ') + fcMax + ' bpm';
+  document.getElementById('note-gulati').classList.toggle('show', isGulati);
+  document.getElementById('result-wrap').classList.add('show');
+
+  var vo2Str = null;
+  var testInfo = '';
+  if (testMethod === 'cooper') {
+    var distVal = document.getElementById('cooper-dist').value;
+    vo2Str = distVal ? calcVO2(parseFloat(distVal)) + ' ml/kg/min' : null;
+  } else if (testMethod === 'bike' && lastBikeVO2Rel !== null) {
+    vo2Str = lastBikeVO2Rel.toFixed(1) + ' ml/kg/min';
+    testInfo = '\nTeste: bike (Åstrand-Ryhming) · carga ' + lastBikeWatts.toFixed(0)
+      + ' W · FC estável ' + document.getElementById('bike-fc').value
+      + ' bpm · fator idade ' + lastBikeAgeFactor.toFixed(2);
+  } else if (testMethod === 'walk' && lastWalkVO2 !== null) {
+    vo2Str = lastWalkVO2.toFixed(1) + ' ml/kg/min';
+    testInfo = '\nTeste: caminhada Rockport · ' + document.getElementById('walk-min').value + 'min'
+      + document.getElementById('walk-seg').value + 's · FC final '
+      + document.getElementById('walk-fc').value + ' bpm'
+      + (lastWalkCorrigido ? ' · correção 18–24 anos aplicada' : '');
+  } else if (testMethod === 'step' && lastStepVO2 !== null) {
+    vo2Str = lastStepVO2.toFixed(1) + ' ml/kg/min';
+    testInfo = '\nTeste: step 2min (obesidade) · ' + document.getElementById('step-uds').value
+      + ' ciclos · IMC ' + lastStepBmi.toFixed(1);
+  }
+
+  var instrucoes = 'Se treinar 2x no dia: cardio na 1ª sessão, musculação na 2ª, com no mínimo 6h de intervalo.\n'
+    + 'Se treinar 1x no dia: cardio sempre após a musculação. Exceção: aeróbico leve pode ser feito antes sem prejuízo (zona de bpm do AEJ). Prefira a bike após treinos de pernas.';
+
+  lastResult = 'ZONAS DE INTENSIDADE DURANTE O CARDIO'
+    + (vo2Str ? '\nVO2 máx estimado: ' + vo2Str : '')
+    + testInfo
+    + '\nAeróbico em jejum (' + jejumMin + '% a ' + jejumMax + '%): ' + rJejumMin + ' a ' + rJejumMax + ' bpm'
+    + '\nAeróbico alimentada (' + alimMin + '% a ' + alimMax + '%): ' + rAlimMin + ' a ' + rAlimMax + ' bpm'
+    + '\nHIIT (' + hiitMin + '% a ' + hiitMax + '%): ' + rHiitMin + ' a ' + rHiitMax + ' bpm'
+    + '\n\n' + instrucoes;
+}
+
+function copiar() {
+  if (!lastResult) return;
+  var btn = document.getElementById('copy-btn');
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(lastResult).then(function() {
+      btn.textContent = 'Copiado!';
+      setTimeout(function() { btn.textContent = 'Copiar resultado'; }, 2000);
+    });
+  } else {
+    var ta = document.createElement('textarea');
+    ta.value = lastResult;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = 'Copiado!';
+    setTimeout(function() { btn.textContent = 'Copiar resultado'; }, 2000);
+  }
+}
+</script>
+</body>
+</html>
